@@ -1,34 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import  axios from 'axios'
+import { useStore } from './hooks/useStore';
+import { Profile } from './Profile';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const setAuthData = useStore((state: any) => state.setAuthData)
+  const clientID: string = import.meta.env.GOOGLE_ID_CLIENT
+  console.log(clientID, 'oi')
 
   return (
-    <>
+   <>
+    <GoogleOAuthProvider clientId=''>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        hello
+        <GoogleLogin
+        /*Use one tap */
+          useOneTap
+          onSuccess={async (credentialResponse) => {
+            const {data} = await axios.post('http://localhost:3001/login', {
+              token: credentialResponse.credential
+            })
+            console.log(JSON.stringify(data))
+            
+            localStorage.setItem('authData', JSON.stringify(data))
+
+            setAuthData(data)
+          }}
+          onError={() => {
+            console.log('Login Failed');
+          }}
+        />;  
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <Profile/>
+    </GoogleOAuthProvider>
+   </>
   )
 }
 
